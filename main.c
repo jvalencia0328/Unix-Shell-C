@@ -24,6 +24,15 @@ int main() {
        if(strlen(input) == 0)
             continue;
 
+       //process the exit command
+
+       if(strcmp(input, "exit") == 0)
+            break;
+
+       
+
+
         
+
     }
 }
