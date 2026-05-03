@@ -45,8 +45,6 @@ int main()
         int i = 0;
         while (token != NULL)
         {
-            // print the token
-            printf("Token: %s\n", token);
             // Store the token in the args array
             args[i] = token;
 
@@ -57,13 +55,30 @@ int main()
         // Null-terminate the args array
         args[i] = NULL;
 
+        // build cd command
+        if (strcmp(args[0], "cd") == 0)
+        {
+            if (args[1] == NULL)
+            {
+                printf("cd: missing directory\n");
+            }
+            else
+            {
+                int result = chdir(args[1]);
+
+                if (result != 0)
+                {
+                    perror("cd: failed to change directory\n");
+                }
+            }
+            continue;
+        }
         // for a new process
         pid_t p = fork();
 
         if (p == 0)
         {
             // child process
-            printf("Child process\n");
             execvp(args[0], args);
             // if fail print error
             perror("execvp failed");
@@ -72,7 +87,7 @@ int main()
         else if (p > 0)
         {
             // parent process
-            printf("Parent process\n");
+            wait(NULL);
         }
         else
         {
