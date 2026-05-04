@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <fcntl.h>
 
 // main shell loop:
 int main()
@@ -109,6 +110,7 @@ int main()
                 {
                     fprintf(stderr, "Error: no output file specified\n");
                     missing_output_file = true;
+                    break;
                 }
             }
         }
@@ -120,6 +122,21 @@ int main()
 
         if (p == 0)
         {
+
+            if (output_file != NULL)
+            {
+                int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (fd == -1)
+                {
+                    perror("Error: failed to create output file");
+                    exit(1);
+                }
+                else
+                {
+                    dup2(fd, STDOUT_FILENO);
+                    close(fd);
+                }
+            }
             // child process
             execvp(args[0], args);
             // if fail print error
