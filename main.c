@@ -95,6 +95,10 @@ int main()
 
         // missing output file flag
         bool missing_output_file = false;
+
+        // append true or false
+        bool append_mode = false;
+
         for (int i = 0; args[i] != NULL; i++)
         {
             if (strcmp(args[i], ">") == 0)
@@ -102,6 +106,23 @@ int main()
                 printf("Output redirection detected\n");
                 if (args[i + 1] != NULL)
                 {
+                    output_file = args[i + 1];
+                    args[i] = NULL;
+                    break;
+                }
+                else
+                {
+                    fprintf(stderr, "Error: no output file specified\n");
+                    missing_output_file = true;
+                    break;
+                }
+            }
+            if (strcmp(args[i], ">>") == 0)
+            {
+                printf("Output append redirection");
+                if (args[i + 1] != NULL)
+                {
+                    append_mode = true;
                     output_file = args[i + 1];
                     args[i] = NULL;
                     break;
@@ -122,19 +143,37 @@ int main()
 
         if (p == 0)
         {
-
+            int fd;
             if (output_file != NULL)
             {
-                int fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (fd == -1)
+                if (append_mode)
                 {
-                    perror("Error: failed to create output file");
-                    exit(1);
+                    fd = open(output_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+
+                    if (fd == -1)
+                    {
+                        perror("Error: fialed to create output file");
+                        exit(1);
+                    }
+                    else
+                    {
+                        dup2(fd, STDOUT_FILENO);
+                        close(fd);
+                    }
                 }
                 else
                 {
-                    dup2(fd, STDOUT_FILENO);
-                    close(fd);
+                    fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                    if (fd == -1)
+                    {
+                        perror("Error: failed to create output file");
+                        exit(1);
+                    }
+                    else
+                    {
+                        dup2(fd, STDOUT_FILENO);
+                        close(fd);
+                    }
                 }
             }
             // child process
